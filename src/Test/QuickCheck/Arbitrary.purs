@@ -32,7 +32,7 @@ import Data.Maybe (Maybe(..), fromJust)
 import Data.Newtype (wrap)
 import Data.NonEmpty (NonEmpty(..), (:|))
 import Data.String (split)
-import Data.String.CodeUnits (charAt, fromCharArray)
+import Data.String.CodePoints (fromCodePointArray, CodePoint, codePointAt)
 import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty as NES
 import Data.String.NonEmpty.CodeUnits as NESCU
@@ -85,10 +85,10 @@ instance coarbInt :: Coarbitrary Int where
   coarbitrary = perturbGen <<< toNumber
 
 instance arbString :: Arbitrary String where
-  arbitrary = fromCharArray <$> arbitrary
+  arbitrary = fromCodePointArray <$> arbitrary
 
 instance coarbString :: Coarbitrary String where
-  coarbitrary s = coarbitrary $ (charAt zero <$> split (wrap "") s)
+  coarbitrary s = coarbitrary $ (codePointAt zero <$> split (wrap "") s)
 
 instance arbNonEmptyString :: Arbitrary NonEmptyString where
   arbitrary = NESCU.cons <$> arbitrary <*> arbitrary
@@ -101,6 +101,12 @@ instance arbChar :: Arbitrary Char where
 
 instance coarbChar :: Coarbitrary Char where
   coarbitrary c = coarbitrary $ fromEnum c
+
+instance arbCodePoint :: Arbitrary CodePoint where
+  arbitrary = toEnumWithDefaults bottom top <$> chooseInt 0 1114111
+
+instance coarbCodePoint :: Coarbitrary CodePoint where
+  coarbitrary cp = coarbitrary $ fromEnum cp
 
 instance arbUnit :: Arbitrary Unit where
   arbitrary = pure unit
